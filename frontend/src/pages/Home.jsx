@@ -130,7 +130,6 @@ const Home = () => {
           <FlashcardApp
             onGoHome={goHome}
             darkMode={darkMode}
-            // Pass any props needed by FlashcardApp here
           />
         );
       default:

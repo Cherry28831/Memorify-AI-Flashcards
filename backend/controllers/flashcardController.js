@@ -53,7 +53,7 @@ const generateFlashcards = async (req, res, next) => {
 
 function parseFlashcards(text) {
   const cards = [];
-  const blocks = text.split(/\[Q\]/i).slice(1); // Skip first empty split
+  const blocks = text.split(/\[Q\]/i).slice(1); 
 
   for (let block of blocks) {
     const [questionLine, ...answerLines] = block.trim().split("\n");

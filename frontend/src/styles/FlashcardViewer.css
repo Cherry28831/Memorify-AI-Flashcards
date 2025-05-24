@@ -202,3 +202,18 @@
     min-width: 70px;
   }
 }
+
+.flashcard-container.empty {
+  text-align: center;
+  padding: 2rem;
+}
+
+.flashcard-container .error-message {
+  color: red;
+  margin-top: 1rem;
+}
+
+button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
