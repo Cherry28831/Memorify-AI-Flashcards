@@ -34,7 +34,7 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
       setCurrentIndex((prevIndex) => 
         prevIndex < dueCards.length - 1 ? prevIndex + 1 : 0
       );
-    }, 150); 
+    }, 220); 
   };
   
   const handlePrevCard = () => {

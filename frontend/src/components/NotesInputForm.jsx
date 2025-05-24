@@ -48,7 +48,7 @@ const NotesInputForm = ({ onGenerateFlashcards, isLoading }) => {
     <div className="notes-input-section">
       <div className="input-header">
         <h2>Create Flashcards</h2>
-        <p>Paste your lecture notes or upload a PDF, and our AI will automatically generate flashcards for you.</p>
+        <p>Paste your lecture notes and Memorify will automatically generate flashcards for you.</p>
       </div>
 
       <form className="notes-form" onSubmit={handleSubmit}>

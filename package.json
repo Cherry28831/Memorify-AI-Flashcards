@@ -3,5 +3,9 @@
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && npm run dev",
     "frontend": "cd frontend && npm start"
+  },
+  "dependencies": {
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2"
   }
 }
