@@ -11,7 +11,7 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
   const [dueCards, setDueCards] = useState([]);
   
   useEffect(() => {
-
+    // Filter cards that are due for review
     const now = new Date();
     const due = flashcards.filter(card => new Date(card.nextReview) <= now);
     setDueCards(due.length ? due : flashcards);
@@ -29,25 +29,25 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
   const handleNextCard = () => {
     setIsFlipped(false);
     setShowAnswer(false);
-  
-    setTimeout(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex < dueCards.length - 1 ? prevIndex + 1 : 0
-      );
-    }, 220); 
+    
+    if (currentIndex < dueCards.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0); // Loop back to the first card
+    }
   };
-  
+
   const handlePrevCard = () => {
     setIsFlipped(false);
     setShowAnswer(false);
-  
-    setTimeout(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex > 0 ? prevIndex - 1 : dueCards.length - 1
-      );
-    }, 300);
+    
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(dueCards.length - 1); // Go to the last card
+    }
   };
-  
+
   const handleReview = (result) => {
     if (currentCard) {
       onReviewResult(currentCard.id, result);
