@@ -1,8 +1,10 @@
 {
+  "name": "memorify-root",
+  "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend && npm run dev",
-    "frontend": "cd frontend && npm start"
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start"
   },
   "dependencies": {
     "jspdf": "^3.0.1",
