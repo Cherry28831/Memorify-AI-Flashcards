@@ -6,11 +6,14 @@ const FlashcardApp = () => {
   const [flashcards, setFlashcards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Use the environment variable or fallback to localhost for development
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
   // Generate flashcards from notes via API call
   const handleGenerateFlashcards = async (notesText) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/generate-flashcards', {
+      const response = await fetch(`${apiUrl}/generate-flashcards`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: notesText }),
