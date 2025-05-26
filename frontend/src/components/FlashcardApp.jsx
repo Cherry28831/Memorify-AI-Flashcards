@@ -7,7 +7,7 @@ const FlashcardApp = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Use the environment variable or fallback to localhost for development
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   // Generate flashcards from notes via API call
   const handleGenerateFlashcards = async (notesText) => {
