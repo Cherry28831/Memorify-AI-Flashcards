@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/FlashcardViewer.css';
-import { ChevronLeftIcon, ChevronRightIcon, EditIcon, DeleteIcon } from './Icons';
+import jsPDF from 'jspdf';
+import { ChevronLeftIcon, ChevronRightIcon, EditIcon, DeleteIcon, DownloadIcon } from './Icons';
 import FlashcardEditor from './FlashcardEditor';
 
 const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
@@ -9,16 +10,15 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [dueCards, setDueCards] = useState([]);
-  
+
   useEffect(() => {
-    // Filter cards that are due for review
     const now = new Date();
     const due = flashcards.filter(card => new Date(card.nextReview) <= now);
     setDueCards(due.length ? due : flashcards);
   }, [flashcards]);
 
   const currentCard = dueCards[currentIndex] || null;
-  
+
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
     if (!isFlipped) {
@@ -29,22 +29,20 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
   const handleNextCard = () => {
     setIsFlipped(false);
     setShowAnswer(false);
-    
     if (currentIndex < dueCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      setCurrentIndex(0); // Loop back to the first card
+      setCurrentIndex(0);
     }
   };
 
   const handlePrevCard = () => {
     setIsFlipped(false);
     setShowAnswer(false);
-    
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else {
-      setCurrentIndex(dueCards.length - 1); // Go to the last card
+      setCurrentIndex(dueCards.length - 1);
     }
   };
 
@@ -77,6 +75,16 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
     }
   };
 
+  const handleDownloadCurrentCard = () => {
+    if (!currentCard) return;
+    const doc = new jsPDF();
+    const margin = 10;
+    const cardText = `Q: ${currentCard.question}\n\nA: ${currentCard.answer}`;
+    const splitText = doc.splitTextToSize(cardText, doc.internal.pageSize.width - 2 * margin);
+    doc.text(splitText, margin, margin + 10);
+    doc.save(`flashcard_${currentCard.id}.pdf`);
+  };
+
   if (dueCards.length === 0) {
     return (
       <div className="flashcard-container empty">
@@ -101,7 +109,7 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
       <div className="flashcard-progress">
         <span>Card {currentIndex + 1} of {dueCards.length}</span>
       </div>
-      
+
       <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
         <div className="flashcard-inner">
           <div className="flashcard-front">
@@ -113,16 +121,16 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
           </div>
         </div>
       </div>
-      
+
       <div className="flashcard-actions">
         <button onClick={handleEdit} className="action-btn edit-btn" title="Edit card">
           <EditIcon />
         </button>
-        
+
         <button onClick={handlePrevCard} className="nav-btn prev-btn">
           <ChevronLeftIcon />
         </button>
-        
+
         {showAnswer && (
           <div className="rating-buttons">
             <button onClick={() => handleReview('hard')} className="rating-btn hard">Hard</button>
@@ -130,13 +138,17 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
             <button onClick={() => handleReview('easy')} className="rating-btn easy">Easy</button>
           </div>
         )}
-        
+
         <button onClick={handleNextCard} className="nav-btn next-btn">
           <ChevronRightIcon />
         </button>
-        
+
         <button onClick={handleDelete} className="action-btn delete-btn" title="Delete card">
           <DeleteIcon />
+        </button>
+
+        <button onClick={handleDownloadCurrentCard} className="action-btn download-btn" title="Download card as PDF">
+          <DownloadIcon />
         </button>
       </div>
     </div>

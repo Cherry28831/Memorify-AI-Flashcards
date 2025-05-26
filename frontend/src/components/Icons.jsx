@@ -1,4 +1,20 @@
-import React from 'react';
+export const DownloadIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 3v13" />
+    <polyline points="8 13 12 17 16 13" />
+    <rect x="4" y="17" width="16" height="4" rx="1" ry="1" />
+  </svg>
+);
 
 export const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -3,6 +3,7 @@ import NotesInputForm from './NotesInputForm';
 import FlashcardViewer from './FlashcardViewer';
 import AllFlashcards from './AllFlashcards';
 import '../styles/ChatSession.css';
+import jsPDF from 'jspdf';
 
 const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
     const [currentSession, setCurrentSession] = useState(null);
@@ -13,7 +14,6 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
     const [error, setError] = useState(null);
     const [deletionToast, setDeletionToast] = useState(null);
 
-    // Initialize session when sessionId or sessions change
     useEffect(() => {
         const session = sessions.find(s => s.id === sessionId) || {
             id: sessionId,
@@ -29,9 +29,9 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
         const trimmedTitle = editTitle.trim();
         if (!trimmedTitle) return;
 
-        const updatedSession = { ...currentSession, title: trimmedTitle };
-        setCurrentSession(updatedSession);
-        onSaveSession(updatedSession);
+        const updated = { ...currentSession, title: trimmedTitle };
+        setCurrentSession(updated);
+        onSaveSession(updated);
         setIsEditingTitle(false);
     };
 
@@ -41,7 +41,7 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
     };
 
     const handleGenerateFlashcards = async (notes, fileName) => {
-        if (!notes || typeof notes !== 'string' || !notes.trim()) {
+        if (!notes?.trim()) {
             setError('Please enter valid notes text.');
             return;
         }
@@ -50,21 +50,20 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:5000/api/flashcards/generate', {
+            const res = await fetch('http://localhost:5000/api/flashcards/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes })
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to generate flashcards');
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Failed to generate flashcards');
             }
 
-            const data = await response.json();
-
-            const newFlashcards = data.flashcards.map((card, index) => ({
-                id: `${Date.now()}-${index}`,
+            const data = await res.json();
+            const newCards = data.flashcards.map((card, i) => ({
+                id: `${Date.now()}-${i}`,
                 question: card.question,
                 answer: card.answer,
                 nextReview: new Date(),
@@ -72,109 +71,122 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                 difficulty: 'new'
             }));
 
-            const updatedSession = {
+            const updated = {
                 ...currentSession,
                 title: fileName || `Session ${new Date().toLocaleDateString()}`,
-                flashcards: [...(currentSession.flashcards || []), ...newFlashcards]
+                flashcards: [...(currentSession.flashcards || []), ...newCards]
             };
 
-            setCurrentSession(updatedSession);
-            onSaveSession(updatedSession);
+            setCurrentSession(updated);
+            onSaveSession(updated);
             setActiveTab('review');
         } catch (err) {
-            console.error("Flashcard generation error:", err);
             setError(err.message || 'Failed to generate flashcards');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Update flashcard after user reviews it
     const handleReviewResult = (id, result) => {
-        const updatedFlashcards = currentSession.flashcards.map(card => {
+        const updatedCards = currentSession.flashcards.map(card => {
             if (card.id !== id) return card;
 
-            const nextDate = new Date();
+            const next = new Date();
             let difficulty = card.difficulty;
 
-            switch (result) {
-                case 'easy':
-                    nextDate.setDate(nextDate.getDate() + (card.reviewCount * 2 + 1));
-                    difficulty = 'mastered';
-                    break;
-                case 'medium':
-                    nextDate.setDate(nextDate.getDate() + 1);
-                    difficulty = 'learning';
-                    break;
-                case 'hard':
-                    nextDate.setHours(nextDate.getHours() + 4);
-                    difficulty = 'difficult';
-                    break;
-                default:
-                    break;
+            if (result === 'easy') {
+                next.setDate(next.getDate() + (card.reviewCount * 2 + 1));
+                difficulty = 'mastered';
+            } else if (result === 'medium') {
+                next.setDate(next.getDate() + 1);
+                difficulty = 'learning';
+            } else if (result === 'hard') {
+                next.setHours(next.getHours() + 4);
+                difficulty = 'difficult';
             }
 
             return {
                 ...card,
-                nextReview: nextDate,
+                nextReview: next,
                 reviewCount: card.reviewCount + 1,
                 difficulty
             };
         });
 
-        const updatedSession = { ...currentSession, flashcards: updatedFlashcards };
-        setCurrentSession(updatedSession);
-        onSaveSession(updatedSession);
+        const updated = { ...currentSession, flashcards: updatedCards };
+        setCurrentSession(updated);
+        onSaveSession(updated);
     };
 
-    // Edit a flashcard manually
     const handleEditFlashcard = (id, updatedCard) => {
-        const updatedFlashcards = currentSession.flashcards.map(card =>
+        const updatedCards = currentSession.flashcards.map(card =>
             card.id === id ? { ...card, ...updatedCard } : card
         );
-
-        const updatedSession = { ...currentSession, flashcards: updatedFlashcards };
-        setCurrentSession(updatedSession);
-        onSaveSession(updatedSession);
+        const updated = { ...currentSession, flashcards: updatedCards };
+        setCurrentSession(updated);
+        onSaveSession(updated);
     };
 
-    // Delete a flashcard with undo option
     const handleDeleteFlashcard = (id) => {
-        const cardToDelete = currentSession.flashcards.find(card => card.id === id);
-        const updatedFlashcards = currentSession.flashcards.filter(card => card.id !== id);
+        const toDelete = currentSession.flashcards.find(card => card.id === id);
+        const remaining = currentSession.flashcards.filter(card => card.id !== id);
 
-        const updatedSession = {
-            ...currentSession,
-            flashcards: updatedFlashcards
-        };
-
-        setCurrentSession(updatedSession);
-        onSaveSession(updatedSession);
+        const updated = { ...currentSession, flashcards: remaining };
+        setCurrentSession(updated);
+        onSaveSession(updated);
 
         setDeletionToast({
             message: 'Flashcard deleted',
             undo: () => {
-                const restoredFlashcards = [...updatedFlashcards, cardToDelete];
-                const restoredSession = { ...currentSession, flashcards: restoredFlashcards };
-                setCurrentSession(restoredSession);
-                onSaveSession(restoredSession);
+                const restored = { ...currentSession, flashcards: [...remaining, toDelete] };
+                setCurrentSession(restored);
+                onSaveSession(restored);
                 setDeletionToast(null);
             }
         });
 
         setTimeout(() => setDeletionToast(null), 5000);
+        if (activeTab === 'review' && remaining.length === 0) setActiveTab('input');
+    };
 
-        if (activeTab === 'review' && updatedFlashcards.length === 0) {
-            setActiveTab('input');
-        }
+    const handleDownloadAll = () => {
+        if (!currentSession?.flashcards?.length) return;
+
+        const doc = new jsPDF();
+        const title = currentSession.title || 'Flashcards';
+        doc.setFontSize(16);
+        doc.text(title, 10, 10);
+
+        let y = 20;
+
+        currentSession.flashcards.forEach((card, i) => {
+            const question = `Q${i + 1}: ${card.question}`;
+            const answer = `A${i + 1}: ${card.answer}`;
+
+            const qLines = doc.splitTextToSize(question, 180);
+            const aLines = doc.splitTextToSize(answer, 180);
+
+            if (y + (qLines.length + aLines.length) * 7 > 280) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.text(qLines, 10, y);
+            y += qLines.length * 7;
+
+            doc.setTextColor(60, 60, 60);
+            doc.text(aLines, 10, y);
+            y += aLines.length * 7 + 10;
+
+            doc.setTextColor(0, 0, 0);
+        });
+
+        doc.save(`${title}.pdf`);
     };
 
     if (!currentSession) {
-        return (
-            <div className="chat-session loading">
-                <div className="loading-spinner"></div>
-            </div>
-        );
+        return <div className="chat-session loading"><div className="loading-spinner" /></div>;
     }
 
     return (
@@ -186,7 +198,6 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                     {isEditingTitle ? (
                         <div className="title-edit">
                             <input
-                                type="text"
                                 value={editTitle}
                                 onChange={(e) => setEditTitle(e.target.value)}
                                 className="title-input"
@@ -202,39 +213,39 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                     ) : (
                         <div className="title-display">
                             <h2>{currentSession.title || 'New Session'}</h2>
-                            <button 
-                                onClick={() => setIsEditingTitle(true)} 
-                                className="edit-title-btn"
-                                aria-label="Edit session title"
-                            >
-                                ✏️ Edit
-                            </button>
+                            <button onClick={() => setIsEditingTitle(true)} className="edit-title-btn">✏️ Edit</button>
                         </div>
                     )}
                 </div>
 
+                {/* Tabs + Download Button */}
                 <div className="session-tabs">
-                    <button 
-                        className={`tab ${activeTab === 'input' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('input')}
-                        disabled={isLoading}
+                    {['input', 'review', 'all-cards'].map(tab => (
+                        <button
+                            key={tab}
+                            className={`tab ${activeTab === tab ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab)}
+                            disabled={
+                                isLoading ||
+                                (['review', 'all-cards'].includes(tab) && !currentSession.flashcards.length)
+                            }
+                        >
+                            {tab === 'input' && 'Add Content'}
+                            {tab === 'review' && 'Review Cards'}
+                            {tab === 'all-cards' && `All Cards (${currentSession.flashcards.length})`}
+                        </button>
+                    ))}
+
+                    {currentSession.flashcards.length > 0 && (
+                        <button
+                        className="tab"
+                        onClick={handleDownloadAll}
+                        style={{ marginLeft: '10px' }}
                     >
-                        Add Content
+                        Download Cards
                     </button>
-                    <button 
-                        className={`tab ${activeTab === 'review' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('review')}
-                        disabled={isLoading || currentSession.flashcards.length === 0}
-                    >
-                        Review Cards
-                    </button>
-                    <button 
-                        className={`tab ${activeTab === 'all-cards' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('all-cards')}
-                        disabled={isLoading || currentSession.flashcards.length === 0}
-                    >
-                        All Cards ({currentSession.flashcards.length})
-                    </button>
+                    
+                    )}
                 </div>
             </div>
 
@@ -247,27 +258,22 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                 )}
 
                 {activeTab === 'input' && (
-                    <NotesInputForm 
-                        onGenerateFlashcards={handleGenerateFlashcards} 
+                    <NotesInputForm
+                        onGenerateFlashcards={handleGenerateFlashcards}
                         isLoading={isLoading}
                     />
                 )}
-
                 {activeTab === 'review' && (
-                    <FlashcardViewer 
+                    <FlashcardViewer
                         flashcards={currentSession.flashcards}
                         onReviewResult={handleReviewResult}
                         onEdit={handleEditFlashcard}
                         onDelete={handleDeleteFlashcard}
                     />
                 )}
-
                 {activeTab === 'all-cards' && (
                     <div className="session-all-cards">
-                        <AllFlashcards 
-                            sessions={[currentSession]}
-                            hideHeader={true}
-                        />
+                        <AllFlashcards sessions={[currentSession]} hideHeader />
                     </div>
                 )}
             </div>
