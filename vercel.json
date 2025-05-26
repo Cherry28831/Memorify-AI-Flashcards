@@ -1,7 +1,4 @@
 {
-    "projects": {
-      "name": "memorify-ai"
-    },
     "rewrites": [
       {
         "source": "/api/(.*)",
