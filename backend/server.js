@@ -16,7 +16,8 @@ app.use('/api/flashcards', flashcardRoutes);
 // Error handling
 app.use(errorHandler);
 
-// Remove app.listen for serverless compatibility
-// Instead export the app instance
-
-module.exports = app;
+// ✅ Start server (Render will assign a dynamic port)
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
