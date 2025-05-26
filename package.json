@@ -8,5 +8,8 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
