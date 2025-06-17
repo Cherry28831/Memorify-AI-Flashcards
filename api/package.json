@@ -15,12 +15,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
-<<<<<<< HEAD:backend/package.json
-  }
-=======
   },
   "keywords": [],
   "author": "",
   "license": "ISC"
->>>>>>> e318c9e (For deployment):api/package.json
 }
