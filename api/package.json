@@ -1,5 +1,5 @@
 {
-  "name": "flashcard-backend",
+  "name": "memorifyai-backend",
   "version": "1.0.0",
   "description": "Backend for flashcard app using Groq API",
   "main": "server.js",
@@ -15,5 +15,12 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
+<<<<<<< HEAD:backend/package.json
   }
+=======
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+>>>>>>> e318c9e (For deployment):api/package.json
 }
