@@ -1,0 +1,21 @@
+require('dotenv').config();
+const express = require('express');
+const serverless = require('serverless-http');
+const cors = require('cors');
+const flashcardRoutes = require('./routes/flashcardRoutes');
+const errorHandler = require('./middlewares/errorMiddleware');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/flashcards', flashcardRoutes);
+
+// Error handling
+app.use(errorHandler);
+
+// Export as Vercel Serverless Function
+module.exports = serverless(app);
