@@ -6,8 +6,7 @@ const FlashcardApp = () => {
   const [flashcards, setFlashcards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Use the environment variable or fallback to localhost for development
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = process.env.REACT_APP_API_URL || 'https://memorify-ai-flashcards.onrender.com/api/flashcards';
 
   // Generate flashcards from notes via API call
   const handleGenerateFlashcards = async (notesText) => {
