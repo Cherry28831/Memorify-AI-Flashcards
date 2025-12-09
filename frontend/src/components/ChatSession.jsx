@@ -51,6 +51,7 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
 
         try {
             const apiUrl = process.env.REACT_APP_API_URL || 'https://memorify-ai-flashcards.onrender.com/api/flashcards';
+            console.log('API URL:', apiUrl);
             const res = await fetch(`${apiUrl}/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
