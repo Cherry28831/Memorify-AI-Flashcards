@@ -7,7 +7,6 @@ import FlashcardEditor from './FlashcardEditor';
 const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [dueCards, setDueCards] = useState([]);
 
@@ -21,14 +20,10 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
-    if (!isFlipped) {
-      setShowAnswer(true);
-    }
   };
 
   const handleNextCard = () => {
     setIsFlipped(false);
-    setShowAnswer(false);
     if (currentIndex < dueCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -38,7 +33,6 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
 
   const handlePrevCard = () => {
     setIsFlipped(false);
-    setShowAnswer(false);
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else {

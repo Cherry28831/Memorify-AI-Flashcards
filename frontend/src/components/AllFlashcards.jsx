@@ -24,15 +24,7 @@ const AllFlashcards = ({ sessions, onGoHome, hideHeader = false, onEdit, onDelet
     card.sessionTitle.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'new': return '#4361ee';
-      case 'learning': return '#f77f00';
-      case 'difficult': return '#e63946';
-      case 'mastered': return '#2a9d8f';
-      default: return '#6c757d';
-    }
-  };
+
 
   const handleEditCard = (card) => {
     setEditingCard(card);
