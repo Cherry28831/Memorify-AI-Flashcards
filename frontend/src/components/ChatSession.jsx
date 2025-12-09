@@ -40,9 +40,9 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
         setIsEditingTitle(false);
     };
 
-    const handleGenerateFlashcards = async (notes, fileName) => {
+    const handleGenerateFlashcards = async (notes) => {
         if (!notes?.trim()) {
-            setError('Please enter valid notes text.');
+            setError('Please enter notes.');
             return;
         }
 
@@ -57,7 +57,7 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
             });
 
             if (!res.ok) {
-                const err = await res.json();
+                const err = await res.json().catch(() => ({ error: 'Failed to generate flashcards' }));
                 throw new Error(err.error || 'Failed to generate flashcards');
             }
 
@@ -73,7 +73,7 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
 
             const updated = {
                 ...currentSession,
-                title: fileName || `Session ${new Date().toLocaleDateString()}`,
+                title: `Session ${new Date().toLocaleDateString()}`,
                 flashcards: [...(currentSession.flashcards || []), ...newCards]
             };
 
@@ -231,8 +231,8 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                             }
                         >
                             {tab === 'input' && 'Add Content'}
-                            {tab === 'review' && 'Review Cards'}
-                            {tab === 'all-cards' && `All Cards (${currentSession.flashcards.length})`}
+                            {tab === 'review' && 'Review'}
+                            {tab === 'all-cards' && `All (${currentSession.flashcards.length})`}
                         </button>
                     ))}
 
@@ -273,7 +273,20 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
                 )}
                 {activeTab === 'all-cards' && (
                     <div className="session-all-cards">
-                        <AllFlashcards sessions={[currentSession]} hideHeader />
+                        <AllFlashcards 
+                            sessions={[currentSession]} 
+                            hideHeader 
+                            onEdit={(sessionId, cardId, updatedCard) => handleEditFlashcard(cardId, updatedCard)}
+                            onDelete={(sessionId, cardId) => handleDeleteFlashcard(cardId)}
+                            onReorder={(sessionId, fromIndex, toIndex) => {
+                                const cards = [...currentSession.flashcards];
+                                const [movedCard] = cards.splice(fromIndex, 1);
+                                cards.splice(toIndex, 0, movedCard);
+                                const updated = { ...currentSession, flashcards: cards };
+                                setCurrentSession(updated);
+                                onSaveSession(updated);
+                            }}
+                        />
                     </div>
                 )}
             </div>

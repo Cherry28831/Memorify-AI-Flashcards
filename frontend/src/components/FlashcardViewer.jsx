@@ -46,12 +46,7 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
     }
   };
 
-  const handleReview = (result) => {
-    if (currentCard) {
-      onReviewResult(currentCard.id, result);
-      handleNextCard();
-    }
-  };
+
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -110,37 +105,31 @@ const FlashcardViewer = ({ flashcards, onReviewResult, onEdit, onDelete }) => {
         <span>Card {currentIndex + 1} of {dueCards.length}</span>
       </div>
 
-      <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
-        <div className="flashcard-inner">
-          <div className="flashcard-front">
-            <p>{currentCard?.question}</p>
-            <div className="flip-instruction">Click to reveal answer</div>
-          </div>
-          <div className="flashcard-back">
-            <p>{currentCard?.answer}</p>
+      <div className="flashcard-wrapper">
+        <button onClick={handlePrevCard} className="nav-btn prev-btn">
+          <ChevronLeftIcon />
+        </button>
+
+        <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
+          <div className="flashcard-inner">
+            <div className="flashcard-front">
+              <p>{currentCard?.question}</p>
+              <div className="flip-instruction">Click to reveal answer</div>
+            </div>
+            <div className="flashcard-back">
+              <p>{currentCard?.answer}</p>
+            </div>
           </div>
         </div>
+
+        <button onClick={handleNextCard} className="nav-btn next-btn">
+          <ChevronRightIcon />
+        </button>
       </div>
 
       <div className="flashcard-actions">
         <button onClick={handleEdit} className="action-btn edit-btn" title="Edit card">
           <EditIcon />
-        </button>
-
-        <button onClick={handlePrevCard} className="nav-btn prev-btn">
-          <ChevronLeftIcon />
-        </button>
-
-        {showAnswer && (
-          <div className="rating-buttons">
-            <button onClick={() => handleReview('hard')} className="rating-btn hard">Hard</button>
-            <button onClick={() => handleReview('medium')} className="rating-btn medium">Good</button>
-            <button onClick={() => handleReview('easy')} className="rating-btn easy">Easy</button>
-          </div>
-        )}
-
-        <button onClick={handleNextCard} className="nav-btn next-btn">
-          <ChevronRightIcon />
         </button>
 
         <button onClick={handleDelete} className="action-btn delete-btn" title="Delete card">

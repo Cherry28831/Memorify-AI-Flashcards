@@ -13,13 +13,16 @@ const FlashcardApp = () => {
   const handleGenerateFlashcards = async (notesText) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${apiUrl}/generate-flashcards`, {
+      const response = await fetch(`${apiUrl}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: notesText }),
       });      
 
-      if (!response.ok) throw new Error('Failed to generate flashcards');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate flashcards');
+      }
 
       const data = await response.json();
 
@@ -28,13 +31,14 @@ const FlashcardApp = () => {
         id: Date.now() + index,
         question: card.question,
         answer: card.answer,
+        difficulty: card.difficulty || 'Medium',
         nextReview: new Date().toISOString(),
       }));
 
       setFlashcards(generatedCards);
     } catch (error) {
       console.error('Error:', error.message);
-      alert('An error occurred while generating flashcards.');
+      alert(error.message || 'An error occurred while generating flashcards.');
     } finally {
       setIsLoading(false);
     }

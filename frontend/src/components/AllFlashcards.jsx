@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import jsPDF from 'jspdf';
+import { Edit2, Trash2, GripVertical } from 'lucide-react';
 import '../styles/AllFlashcards.css';
 
-const AllFlashcards = ({ sessions, onGoHome, hideHeader = false }) => {
+const AllFlashcards = ({ sessions, onGoHome, hideHeader = false, onEdit, onDelete, onReorder }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingCard, setEditingCard] = useState(null);
+  const [editQuestion, setEditQuestion] = useState('');
+  const [editAnswer, setEditAnswer] = useState('');
+  const [draggedCard, setDraggedCard] = useState(null);
 
   const allFlashcards = sessions.flatMap(session =>
     (session.flashcards || []).map(card => ({
@@ -27,6 +32,46 @@ const AllFlashcards = ({ sessions, onGoHome, hideHeader = false }) => {
       case 'mastered': return '#2a9d8f';
       default: return '#6c757d';
     }
+  };
+
+  const handleEditCard = (card) => {
+    setEditingCard(card);
+    setEditQuestion(card.question);
+    setEditAnswer(card.answer);
+  };
+
+  const handleSaveEdit = () => {
+    if (onEdit && editingCard) {
+      onEdit(editingCard.sessionId, editingCard.id, {
+        question: editQuestion,
+        answer: editAnswer
+      });
+      setEditingCard(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCard(null);
+  };
+
+  const handleDragStart = (e, card, index) => {
+    setDraggedCard({ card, index });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetCard, targetIndex) => {
+    e.preventDefault();
+    if (!draggedCard || draggedCard.index === targetIndex) return;
+
+    if (onReorder) {
+      onReorder(draggedCard.card.sessionId, draggedCard.index, targetIndex);
+    }
+    setDraggedCard(null);
   };
 
   const handleDownloadPDF = () => {
@@ -81,27 +126,48 @@ const AllFlashcards = ({ sessions, onGoHome, hideHeader = false }) => {
         </div>
       ) : (
         <div className="flashcards-grid">
-          {filteredFlashcards.map((card) => (
-            <div key={`${card.sessionId}-${card.id}`} className="flashcard-item">
-              <div className="card-header">
-                <span
-                  className="difficulty-badge"
-                  style={{ backgroundColor: getDifficultyColor(card.difficulty) }}
-                >
-                  {card.difficulty}
-                </span>
-                {!hideHeader && (
-                  <span className="session-name">{card.sessionTitle}</span>
-                )}
-              </div>
-              <div className="card-content">
-                <div className="question"><strong>Q:</strong> {card.question}</div>
-                <div className="answer"><strong>A:</strong> {card.answer}</div>
-              </div>
-              <div className="card-stats">
-                <span>Reviews: {card.reviewCount}</span>
-                <span>Next: {new Date(card.nextReview).toLocaleDateString()}</span>
-              </div>
+          {filteredFlashcards.map((card, index) => (
+            <div 
+              key={`${card.sessionId}-${card.id}`} 
+              className="flashcard-item"
+              draggable={!editingCard}
+              onDragStart={(e) => handleDragStart(e, card, index)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, card, index)}
+            >
+              {editingCard?.id === card.id ? (
+                <div className="edit-mode">
+                  <textarea value={editQuestion} onChange={(e) => setEditQuestion(e.target.value)} placeholder="Question" />
+                  <textarea value={editAnswer} onChange={(e) => setEditAnswer(e.target.value)} placeholder="Answer" />
+                  <div className="edit-actions">
+                    <button onClick={handleSaveEdit}>Save</button>
+                    <button onClick={handleCancelEdit}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="card-header">
+                    <div className="drag-handle">
+                      <GripVertical size={20} />
+                    </div>
+                    {!hideHeader && (
+                      <span className="session-name">{card.sessionTitle}</span>
+                    )}
+                  </div>
+                  <div className="card-content">
+                    <div className="question"><strong>Q:</strong> {card.question}</div>
+                    <div className="answer"><strong>A:</strong> {card.answer}</div>
+                  </div>
+                  <div className="card-actions">
+                    <button onClick={() => handleEditCard(card)} title="Edit">
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => onDelete && onDelete(card.sessionId, card.id)} title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

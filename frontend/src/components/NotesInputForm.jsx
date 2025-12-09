@@ -7,24 +7,22 @@ const NotesInputForm = ({ onGenerateFlashcards, isLoading }) => {
   const [notes, setNotes] = useState('');
   const [error, setError] = useState(null);
 
-  // Handle textarea input change with max length validation
   const handleTextareaChange = (e) => {
     const input = e.target.value;
     if (input.length <= MAX_LENGTH) {
       setNotes(input);
-      setError(null); // Clear error on valid input
+      setError(null);
     } else {
       setError(`Note limit exceeded. Maximum ${MAX_LENGTH} characters allowed.`);
     }
   };
 
-  // Validate input and submit notes for flashcard generation
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmedNotes = notes.trim();
 
     if (!trimmedNotes) {
-      setError('Please enter notes or upload a file.');
+      setError('Please enter notes.');
       return;
     }
     if (trimmedNotes.length < 30) {
