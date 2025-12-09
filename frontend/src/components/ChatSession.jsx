@@ -50,7 +50,8 @@ const ChatSession = ({ sessionId, sessions, onSaveSession, onGoHome }) => {
         setError(null);
 
         try {
-            const res = await fetch('http://localhost:5000/api/flashcards/generate', {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/flashcards';
+            const res = await fetch(`${apiUrl}/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes })
